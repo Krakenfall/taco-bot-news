@@ -1,0 +1,19 @@
+{
+  "name": "taco-bot-news",
+  "version": "1.0.0",
+  "description": "Node.js on Docker",
+  "author": "Krakenfall",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bluebird": "^3.4.6",
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "raw.js": "^0.6.0",
+    "request": "^2.74.0",
+    "util": "^0.10.3",
+	"mongodb": "^2.2.25"
+  }
+}
