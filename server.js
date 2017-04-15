@@ -36,7 +36,7 @@ app.get('/status', function(req, res) {
 
 app.get("/log", function(req, res) {
 	var logName = "server.log";
-	util.readFile(logName, function(error, logData){
+	apputil.readFile(logName, function(error, logData){
 		if (error) {
 			apputil.log(`Error retrieving log: \r\n ${error.stack}`);
 			res.end(error);
