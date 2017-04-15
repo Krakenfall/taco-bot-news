@@ -12,6 +12,6 @@ before_install:
 script:
 - echo 'I should write some tests...'
 - eval $(aws ecr get-login --region us-west-2)
-- docker build -t taco-bot-news:latest -t taco-bot-news:1.0.$TRAVIS_BUILD_NUMBER -t "869640726279.dkr.ecr.us-west-2.amazonaws.com/taco-bot-news:latest" .
+- docker build -t taco-bot-news:latest -t taco-bot-news:1.0.$TRAVIS_BUILD_NUMBER -t
+  "869640726279.dkr.ecr.us-west-2.amazonaws.com/taco-bot-news:latest" .
 - docker push "869640726279.dkr.ecr.us-west-2.amazonaws.com/taco-bot-news:latest"
-
