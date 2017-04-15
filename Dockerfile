@@ -12,6 +12,6 @@ COPY . /bot/app
 
 RUN export TZ=America/Los_Angeles
 
-EXPOSE 80
+EXPOSE 9002
 
 CMD ["npm", "start"]
