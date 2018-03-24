@@ -47,19 +47,6 @@ app.get("/log", function(req, res) {
 	});
 });
 
-app.get("/reddit/update", function(req, res) {
-	dtg_bot.run(function(error) {
-		var message = "Successfully checked reddit for DTG_Bot posts";
-		if (error) {
-			message = `Failed when running dtg_bot:\r\n ${error.stack}`;
-			apputil.log(message, null, true);
-			res.send(message);
-		} else {
-			res.send(message);
-		}
-	});
-});
-
 // Handle Error response
 app.use(function(err, req, res, next) {
 	apputil.log("Error with server:\r\nError:\r\n" + err.stack + "\r\nStack:" + err.stack);
