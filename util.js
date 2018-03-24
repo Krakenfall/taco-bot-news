@@ -2,6 +2,7 @@ var fs = require('fs');
 var http = require('http');
 var request = require('request');
 var configService = require('./services/configuration.js');
+var db = require('./db.js');
 
 var log = function(data, file, logInConsole) {
 	var logFile = "";
