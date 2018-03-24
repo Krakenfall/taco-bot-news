@@ -2,6 +2,8 @@ FROM node:argon
 LABEL Description="Posts news into the provided GroupMe chat" \
 Vendor="Krakenfall" Version="1.0"
 
+ARG API_PORT=9002
+
 RUN mkdir -p /bot/app
 WORKDIR /bot/app
 
@@ -14,6 +16,6 @@ COPY . /bot/app
 
 RUN export TZ=America/Los_Angeles
 
-EXPOSE 9002
+EXPOSE $API_PORT
 
 CMD ["npm", "start"]
