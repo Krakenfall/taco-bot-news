@@ -37,40 +37,36 @@ function announceError(source, message, callback) {
 	callback(logMessage);
 }
 
-
-var groupme_text_post = function(text, callback) {
-	var config = {};
-	var configFileName = configService.CONFIG_FILE_NAME;
+var groupme_text_post = function(text, groupId, callback) {
 	var bot = null;
-	try {
-		config = configService.GetConfigurationSync(configFileName);
-		bot = (config.testmode)? config.testbot : config.bot;		
-	}
-	catch (error) {
-		announceError('groupme_text_post', `Error retrieving config settings:\r\n${error}`, callback);
-	}
+	db.get().collection("bots").find().toArray(function(error, bots) {
+		if (error) {
+			log(`Error retrieving bots: ${error}`);
+		} else {
+			bot = bots.find(o => o.groupId === groupId);
+			try {
+				var message = "Success! Posted:\r\n";
 
-	try {
-		var message = "Success! Posted:\r\n";
-
-		request.post("https://api.groupme.com/v3/bots/post"
-			, {json: {"bot_id": bot.id, "text": text}}
-			, (error, response, body) => {
-				if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-					message = `${message}${text} Response: \r\n${body}`;
-					callback(null, message);
-				}
-				else {
-					message = `Failed to submit GroupMe message.\r\nResponse Code: ${response.statusCode}\r\nError: ${error}\r\nMessage body:\r\n${text}`;
-					announceError('groupme_text_post', message, callback);
-				}
+				request.post("https://api.groupme.com/v3/bots/post"
+					, {json: {"bot_id": bot.id, "text": text}}
+					, (error, response, body) => {
+						if (!error && response.statusCode >= 200 && response.statusCode < 300) {
+							message = `${message}${text} Response: \r\n${body}`;
+							callback(null, message);
+						}
+						else {
+							message = `Failed to submit GroupMe message.\r\nResponse Code: ${response.statusCode}\r\nError: ${error}\r\nMessage body:\r\n${text}`;
+							announceError('groupme_text_post', message, callback);
+						}
+					}
+				);
 			}
-		);
-	}
-	catch (err) {
-		message = "Error submitting groupme message: " + err;
-		log(message);
-	}
+			catch (err) {
+				message = "Error submitting groupme message: " + err;
+				log(message);
+			}
+		}
+	});
 };
 
 function shuffle(list) {

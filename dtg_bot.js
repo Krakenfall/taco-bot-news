@@ -88,7 +88,7 @@ var run = function(callback) {
 				var postUrl = posts[j].url;
 				var postTitle = posts[j].title;
 				apputil.log("Sending new link to GroupMe...", null, true);
-				apputil.groupme_text_post(postUrl, function(err) {
+				apputil.groupme_text_post(postUrl, redditConfig.targetGroupMeGroupId, function(err) {
 					if (config.dtgCommandUpdates && config.dtgCommandUpdates.length > 0) {
 						getCommands(function(getCommandsError, commands) {
 							if (!getCommandsError) {
