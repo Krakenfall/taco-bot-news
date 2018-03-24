@@ -1,0 +1,39 @@
+{
+    "domain": "__SiteDomain__",
+    "port": 9002,
+    "tacoBotWebUrl": "__TacoBotWebUrl__",
+    "mongoConnectionString": "__MongoConnectionString__",
+    "reddit": {
+        "checkPeriodInMinutes": __RedditCheckPeriodInMin__,
+        "monitorUserName": "__RedditMonitorUserName__",
+        "monitorSubreddit": "__RedditMonitorSubreddit__",
+        "clientId": "__RedditClientId__",
+        "secretId": "__RedditSecretId__"
+    },
+    "dtgCommandUpdates": [
+        {
+            "redditFilter": "[D2] Weekly Reset Thread",
+            "name": "weeklyreset"
+        },
+        {
+            "redditFilter": "[D2] Trials of the Nine Megathread",
+            "name": "trialsinfo"
+        },
+        {
+            "redditFilter": "[D2] Xur Megathread",
+            "name": "xur"
+        },
+        {
+            "redditFilter": "[D2] Iron Banner Megathread",
+            "name": "ironbanner"
+        },
+        {
+            "redditFilter": "[D2] Daily Reset Thread",
+            "name": "dailyreset"
+        },
+        {
+            "redditFilter": "This Week At Bungie",
+            "name": "thisweekatbungie"
+        }
+    ]
+}
