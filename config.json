@@ -10,6 +10,11 @@
         "clientId": "__RedditClientId__",
         "secretId": "__RedditSecretId__"
     },
+    "discord": {
+        "ClientId": "__DiscordClientId__",
+        "Secret": "__DiscordSecretId__",
+        "token": "__DiscordToken__"
+    },
     "dtgCommandUpdates": [
         {
             "redditFilter": "[D2] Weekly Reset Thread",
