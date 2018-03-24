@@ -8,7 +8,8 @@
         "monitorUserName": "__RedditMonitorUserName__",
         "monitorSubreddit": "__RedditMonitorSubreddit__",
         "clientId": "__RedditClientId__",
-        "secretId": "__RedditSecretId__"
+        "secretId": "__RedditSecretId__",
+        "targetGroupMeGroupId": "__TargetGroupMeGroupId__"
     },
     "discord": {
         "ClientId": "__DiscordClientId__",
