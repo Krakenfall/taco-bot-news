@@ -7,6 +7,8 @@ WORKDIR /bot/app
 
 COPY package.json /bot/app
 RUN npm install
+RUN npm install nano
+RUN export TERM=xterm
 
 COPY . /bot/app
 
