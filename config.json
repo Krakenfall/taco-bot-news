@@ -1,6 +1,6 @@
 {
     "domain": "__SiteDomain__",
-    "port": 9002,
+    "port": __ApiPort__,
     "tacoBotWebUrl": "__TacoBotWebUrl__",
     "mongoConnectionString": "__MongoConnectionString__",
     "reddit": {
