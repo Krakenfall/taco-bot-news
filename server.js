@@ -42,6 +42,18 @@ app.get("/log", function(req, res) {
 	});
 });
 
+app.get("/log/error", function(req, res) {
+	logger.fileRead('error', function(error, logData){
+		if (error) {
+			logger.error(`Error retrieving log: \r\n ${error.toString()}`);
+			res.end(error);
+		} else {
+			// fs.readFileSync returns a buffer. Convert to string here
+			res.send(logData.toString());
+		}
+	});
+});
+
 // Handle Error response
 app.use(function(err, req, res, next) {
 	logger.info("Error with server:\r\nError:\r\n" + err.stack + "\r\nStack:" + err.stack);
