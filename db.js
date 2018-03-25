@@ -1,4 +1,5 @@
 var MongoClient = require('mongodb').MongoClient;
+const logger = require('./services/log');
 
 var state = {
   db: null,

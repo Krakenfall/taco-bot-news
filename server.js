@@ -1,20 +1,16 @@
+
 // Third-party dependencies
 var Promise = require('bluebird');
 var fs = Promise.promisifyAll(require('fs'));
 var express = require('express');
 var bodyParser = require('body-parser');
+var logger = require('./services/log');
 
 // Local dependencies
 var configService = require('./services/configuration.js');
 var apputil = require("./util.js");
 var dtg_bot = require("./dtg_bot.js");
 var db = require('./db.js');
-
-// Define constants
-
-// Define globals
-
-// update the commands command to point to this instance of the bot
 var config = configService.GetConfigurationSync();
 
 // Begin Express handlers
@@ -49,40 +45,40 @@ app.get("/log", function(req, res) {
 
 // Handle Error response
 app.use(function(err, req, res, next) {
-	apputil.log("Error with server:\r\nError:\r\n" + err.stack + "\r\nStack:" + err.stack);
+	logger.info("Error with server:\r\nError:\r\n" + err.stack + "\r\nStack:" + err.stack);
 	res.status(500).send('Something broke!');
 });
 
 db.connect(config.mongoConnectionString, function(err) {
 	if (err) {
-		apputil.log(`Unable to connect to mongo. Error:\r\n${err}`);
+		logger.info(`Unable to connect to mongo. Error:\r\n${err}`);
 		process.exit(1);
 	}
-	apputil.log("Opened db connection", null, true);
+	logger.info("Opened db connection", null, true);
 
 	app.listen(config.port, function () {
-		apputil.log("Server listening on port " + config.port, null, true);
+		logger.info("Server listening on port " + config.port, null, true);
 	});	
 
-	apputil.log("Beginning dtg_bot loop.", null, true);
-	apputil.log(`config.reddit.checkPeriodInMinutes: ${config.reddit.checkPeriodInMinutes}`, null, true);
+	logger.info("Beginning dtg_bot loop.", null, true);
+	logger.info(`config.reddit.checkPeriodInMinutes: ${config.reddit.checkPeriodInMinutes}`, null, true);
 	if (config.reddit && config.reddit.checkPeriodInMinutes) {
 		dtg_bot.run(function(error) {
 			if (error) {
-				apputil.log("Failed when running dtg_bot:\r\n" + error.stack, null, true);
+				logger.info("Failed when running dtg_bot:\r\n" + error.stack, null, true);
 			}
 		});
 
 		setInterval(function(){
 			dtg_bot.run(function(error) {
 				if (error) {
-					apputil.log("Failed when running dtg_bot:\r\n" + error.stack, null, true);
+					logger.info("Failed when running dtg_bot:\r\n" + error.stack, null, true);
 				}
 			});
 		}, config.reddit.checkPeriodInMinutes * 60 * 1000);
 	}
 	else {
-		apputil.log("Critical: Invalid config.json. Ensure that both config.reddit and " + 
+		logger.info("Critical: Invalid config.json. Ensure that both config.reddit and " + 
 					"config.reddit.checkPeriodInMinutes exist and are correct.", null, true);
 		process.exit(1);
 	}

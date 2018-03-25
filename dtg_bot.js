@@ -6,6 +6,7 @@ var util = require("util");
 var rawjs = require("raw.js");
 var reddit = new rawjs("raw.js monitor of DTG_Bot by https://github.com/Krakenfall/taco-bot-news");
 var db = require('./db.js');
+const logger = require('./services/log');
 
 var isPostedWithinCheckPeriod = function (postedDate, checkPeriodInMinutes) {
 	var cutOffTime = Math.floor(new Date().getTime()/1000.0) - (checkPeriodInMinutes * 60);
@@ -17,7 +18,7 @@ var isPostedWithinCheckPeriod = function (postedDate, checkPeriodInMinutes) {
 var getCommands = function(callback) {
 	db.get().collection("commands").find().toArray(function(error, results) {
 		if (error) {
-			apputil.log(`Error retrieving commands: ${error}`);
+			logger.info(`Error retrieving commands: ${error}`);
 			callback(error);
 		} else {
 			callback(null, results);
@@ -35,19 +36,19 @@ var searchByName = function(name, array) {
 
 var updateCommandValue = function(command) {
 	db.get().collection("commands").update({_id: command._id}, {$set: {value: command.value}}, function(e, result) {
-		if (e) { apputil.log(`Error updating command: ${e}`, null, true); }
-		else { apputil.log(`Successfully updated command`, null, true); }
+		if (e) { logger.info(`Error updating command: ${e}`, null, true); }
+		else { logger.info(`Successfully updated command`, null, true); }
 	});	
 };
 
 var run = function(callback) {
 	var config = require('./config.json');
 	var redditConfig = config.reddit;
-	apputil.log("Authenticating...");
+	logger.info("Authenticating...");
 	reddit.setupOAuth2(redditConfig.clientId, redditConfig.secretId);
-	apputil.log("Done.");
+	logger.info("Done.");
 
-	apputil.log(`Retrieving submitted for ${redditConfig.monitorUserName}...`);
+	logger.info(`Retrieving submitted for ${redditConfig.monitorUserName}...`);
 
 	/*
 		1. Get latest posts
@@ -62,7 +63,7 @@ var run = function(callback) {
 	reddit.userLinks({user: redditConfig.monitorUserName, r: redditConfig.monitorSubreddit}, function(err, response) {
 		if (!err) {
 		// Process latest posts
-		//apputil.log("Filtering reddit posts...");
+		//logger.info("Filtering reddit posts...");
 		var posts = [];		
 		for (var i = 0; i < response.children.length; i++) {
 			var data = response.children[i].data;
@@ -77,17 +78,17 @@ var run = function(callback) {
 			post.created_utc = data.created_utc;
 			posts.push(post);
 		}
-		//apputil.log("Checking for new posts...");
+		//logger.info("Checking for new posts...");
 		// Compare latest to saved posts
 		var newPosts = [];
 		for (var j = 0; j < posts.length; j++) {
 			if (isPostedWithinCheckPeriod(posts[j].created_utc, redditConfig.checkPeriodInMinutes)) {
-				apputil.log("New post: " + posts[j].title, null, true);
+				logger.info("New post: " + posts[j].title, null, true);
 				newPosts.push(posts[j]);
 				// Send to GroupMe
 				var postUrl = posts[j].url;
 				var postTitle = posts[j].title;
-				apputil.log("Sending new link to GroupMe...", null, true);
+				logger.info("Sending new link to GroupMe...", null, true);
 				apputil.groupme_text_post(postUrl, redditConfig.targetGroupMeGroupId, function(err) {
 					if (config.dtgCommandUpdates && config.dtgCommandUpdates.length > 0) {
 						getCommands(function(getCommandsError, commands) {
@@ -110,12 +111,12 @@ var run = function(callback) {
 			}
 		}			
 	} else {
-		apputil.log("Error:\r\n" + err.stack, null, true);
+		logger.info("Error:\r\n" + err.stack, null, true);
 		callback(err);
 	}
 	});
 	} catch(error) {
-		apputil.log("ERROR: Something went wrong: \r\n" + error.stack, null, true);
+		logger.info("ERROR: Something went wrong: \r\n" + error.stack, null, true);
 		callback(error);
 	}
 }

@@ -3,6 +3,7 @@ var http = require('http');
 var request = require('request');
 var configService = require('./services/configuration.js');
 var db = require('./db.js');
+const logger = require('./services/log');
 
 var log = function(data, file, logInConsole) {
 	var logFile = "";
@@ -34,7 +35,7 @@ var getFileContents = function(filename, callback) {
 function announceError(source, message, callback) {
 	var logMessage = `${source}:\r\n${message}`;
 
-	log(message);
+	logger.info(message);
 	callback(logMessage);
 }
 
@@ -42,7 +43,7 @@ var groupme_text_post = function(text, groupId, callback) {
 	var bot = null;
 	db.get().collection("bots").find().toArray(function(error, bots) {
 		if (error) {
-			log(`Error retrieving bots: ${error}`);
+			logger.info(`Error retrieving bots: ${error}`);
 		} else {
 			bot = bots.find(o => o.groupId === groupId);
 			try {
@@ -64,7 +65,7 @@ var groupme_text_post = function(text, groupId, callback) {
 			}
 			catch (err) {
 				message = "Error submitting groupme message: " + err;
-				log(message);
+				logger.info(message);
 			}
 		}
 	});
