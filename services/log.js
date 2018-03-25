@@ -17,7 +17,12 @@ if (!fs.existsSync(`${log.info}`)) {
 }
 
 var logger = winston.createLogger({
-    format: winston.format.json(),
+    format: winston.format.combine(
+        winston.format.timestamp({
+            format: 'YYYY-MM-DD HH:mm:ss'
+        }),
+        winston.format.json()
+    ),
     transports: [
         new winston.transports.Console({ timestamp: true }),
         new winston.transports.File({ 
