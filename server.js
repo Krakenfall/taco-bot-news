@@ -31,10 +31,9 @@ app.get('/status', function(req, res) {
 });
 
 app.get("/log", function(req, res) {
-	var logName = "server.log";
-	apputil.readFile(logName, function(error, logData){
+	logger.fileRead('info', function(error, logData){
 		if (error) {
-			apputil.log(`Error retrieving log: \r\n ${error.stack}`);
+			logger.error(`Error retrieving log: \r\n ${error.toString()}`);
 			res.end(error);
 		} else {
 			// fs.readFileSync returns a buffer. Convert to string here

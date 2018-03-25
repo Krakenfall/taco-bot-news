@@ -34,6 +34,18 @@ var logger = winston.createLogger({
     exitOnError: false
 });
 
+const logReader = function (logName , callback) {
+    if (!log[logName]) {
+        throw `Log named ${logName} not found. Use a name found in the` + 
+              `property names below:\r\n${JSON.stringify(log)}`
+    }
+    try {
+        callback(null, fs.readFileSync(`${log[logName]}`));
+    } catch(err) {
+        callback(err);
+    }
+};
+
 module.exports = logger;
 module.exports.stream = {
     write: function(message, encoding) {
@@ -41,3 +53,4 @@ module.exports.stream = {
         console.log(message);
     }
 };
+module.exports.fileRead = logReader;
