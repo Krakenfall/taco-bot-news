@@ -90,6 +90,7 @@ var run = function(callback) {
 				var postTitle = posts[j].title;
 				logger.info("Sending new link to GroupMe...", null, true);
 				apputil.groupme_text_post(postUrl, redditConfig.targetGroupMeGroupId, function(err) {
+					if (!err) {
 					if (config.dtgCommandUpdates && config.dtgCommandUpdates.length > 0) {
 						getCommands(function(getCommandsError, commands) {
 							if (!getCommandsError) {
@@ -106,6 +107,7 @@ var run = function(callback) {
 							}
 						});
 					}
+					} else { logger.error(err); }
 				});
 				
 			}

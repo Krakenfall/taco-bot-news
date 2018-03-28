@@ -15,19 +15,11 @@ var getFileContents = function(filename, callback) {
 	}
 };
 
-// TODO: streamline this out with promises
-function announceError(source, message, callback) {
-	var logMessage = `${source}:\r\n${message}`;
-
-	logger.info(message);
-	callback(logMessage);
-}
-
 var groupme_text_post = function(text, groupId, callback) {
 	var bot = null;
 	db.get().collection("bots").find().toArray(function(error, bots) {
 		if (error) {
-			logger.info(`Error retrieving bots: ${error}`);
+			logger.error(`Error retrieving bots: ${error}`);
 		} else {
 			bot = bots.find(o => o.groupId === groupId);
 			try {
@@ -41,15 +33,15 @@ var groupme_text_post = function(text, groupId, callback) {
 							callback(null, message);
 						}
 						else {
-							message = `Failed to submit GroupMe message.\r\nResponse Code: ${response.statusCode}\r\nError: ${error}\r\nMessage body:\r\n${text}`;
-							announceError('groupme_text_post', message, callback);
+							logger.error(`Failed sending message with status code ${response.statusCode}`);
+							logger.error(`Failed to send message with text:\r\n${text}`);
+							callback(error);
 						}
 					}
 				);
 			}
 			catch (err) {
-				message = "Error submitting groupme message: " + err;
-				logger.info(message);
+				logger.error(err);
 			}
 		}
 	});
