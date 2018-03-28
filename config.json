@@ -1,4 +1,5 @@
 {
+    "debug": false,
     "domain": "__SiteDomain__",
     "port": __ApiPort__,
     "tacoBotWebUrl": "__TacoBotWebUrl__",
