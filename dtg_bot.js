@@ -18,7 +18,7 @@ var isPostedWithinCheckPeriod = function (postedDate, checkPeriodInMinutes) {
 var getCommands = function(callback) {
 	db.get().collection("commands").find().toArray(function(error, results) {
 		if (error) {
-			logger.info(`Error retrieving commands: ${error}`);
+			logger.error(`Error retrieving commands: ${error}`);
 			callback(error);
 		} else {
 			callback(null, results);
@@ -36,7 +36,7 @@ var searchByName = function(name, array) {
 
 var updateCommandValue = function(command) {
 	db.get().collection("commands").update({_id: command._id}, {$set: {value: command.value}}, function(e, result) {
-		if (e) { logger.info(`Error updating command: ${e}`, null, true); }
+		if (e) { logger.error(`Error updating command: ${e}`, null, true); }
 		else { logger.info(`Successfully updated command`, null, true); }
 	});	
 };
@@ -44,11 +44,11 @@ var updateCommandValue = function(command) {
 var run = function(callback) {
 	var config = require('./config.json');
 	var redditConfig = config.reddit;
-	logger.info("Authenticating...");
+	logger.log('debug', "Authenticating...");
 	reddit.setupOAuth2(redditConfig.clientId, redditConfig.secretId);
-	logger.info("Done.");
+	logger.log('debug', "Done.");
 
-	logger.info(`Retrieving submitted for ${redditConfig.monitorUserName}...`);
+	logger.log('debug', `Retrieving submitted for ${redditConfig.monitorUserName}...`);
 
 	/*
 		1. Get latest posts
@@ -111,12 +111,12 @@ var run = function(callback) {
 			}
 		}			
 	} else {
-		logger.info("Error:\r\n" + err.stack, null, true);
+		logger.error("Error:\r\n" + err.stack, null, true);
 		callback(err);
 	}
 	});
 	} catch(error) {
-		logger.info("ERROR: Something went wrong: \r\n" + error.stack, null, true);
+		logger.error("ERROR: Something went wrong: \r\n" + error.stack, null, true);
 		callback(error);
 	}
 }

@@ -1,19 +1,15 @@
 'use strict';
 
 const winston = require('winston');
+require('winston-daily-rotate-file');
 const fs = require('fs');
-const now = new Date();
 
 const log = {
-    error: "./logs/error.log",
-    info: "./logs/info.log" 
+    error: "./logs/error.log"
 };
 
 if (!fs.existsSync(`${log.error}`)) {
     fs.writeFileSync(`${log.error}`,'');
-}
-if (!fs.existsSync(`${log.info}`)) {
-    fs.writeFileSync(`${log.info}`,'');
 }
 
 var logger = winston.createLogger({
@@ -24,29 +20,51 @@ var logger = winston.createLogger({
         winston.format.json()
     ),
     transports: [
-        new winston.transports.Console({ timestamp: true }),
-        new winston.transports.File({ 
-            filename: `${log.info}`,
-            timestamp: true,
-            level: 'info',
-        }),
         new winston.transports.File({
             filename: `${log.error}`,
             timestamp: true,
             level: 'error' 
+        }),
+        new winston.transports.DailyRotateFile({
+            filename: 'info.%DATE%.log',
+            dirname: './logs',
+            datePattern: 'YYYY-MM-DD',
+            level: 'info',
+            timestamp: true,
+            zippedArchive: true,
+            maxSize: '10m',
+            maxFiles: '14d'
         })
+    ],
+    exceptionHandlers: [
+      new winston.transports.File({ filename: './logs/unhandled-exceptions.log' })
     ],
     exitOnError: false
 });
 
 const logReader = function (logName , callback) {
     if (!log[logName]) {
-        throw `Log named ${logName} not found. Use a name found in the` + 
-              `property names below:\r\n${JSON.stringify(log)}`
+        callback(`Log named ${logName} not found. Use a name found in the ` + 
+              `property names below:\r\n${JSON.stringify(log)}`);
+    } else {
+        try {
+            callback(null, fs.readFileSync(`${log[logName]}`));
+        } catch (err) {
+            callback(err);
+        }
     }
+};
+
+const logDailyReader = function (logName , callback) {
+    var now = new Date();
+    var year = now.getFullYear();
+    var month = (now.getMonth() + 1).toLocaleString(undefined, {minimumIntegerDigits: 2, useGrouping:false});
+    var day = now.getDate().toLocaleString(undefined, {minimumIntegerDigits: 2, useGrouping:false})
     try {
-        callback(null, fs.readFileSync(`${log[logName]}`));
-    } catch(err) {
+        callback(null, fs.readFileSync(
+            `./logs/info.${year}-${month}-${day}.log`
+        ));
+    } catch (err) {
         callback(err);
     }
 };
@@ -58,4 +76,5 @@ module.exports.stream = {
         console.log(message);
     }
 };
+module.exports.fileDailyRead = logDailyReader;
 module.exports.fileRead = logReader;
