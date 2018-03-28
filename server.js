@@ -37,6 +37,7 @@ app.get('/', function(req, res) {
 // Return api status
 app.get('/status', function(req, res) {
 	res.send('UP');
+	logger.log('debug', 'Status is UP');
 });
 
 app.get("/log", function(req, res) {
@@ -48,6 +49,7 @@ app.get("/log", function(req, res) {
 		} else {
 			// fs.readFileSync returns a buffer. Convert to string here
 			res.send(logData.toString());
+			logger.log('debug', 'Sent log');
 		}
 	});
 });
@@ -60,6 +62,7 @@ app.get("/log/error", function(req, res) {
 		} else {
 			// fs.readFileSync returns a buffer. Convert to string here
 			res.send(logData.toString());
+			logger.log('debug', 'Sent error log');
 		}
 	});
 });
