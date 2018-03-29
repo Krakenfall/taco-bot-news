@@ -55,6 +55,5 @@ function shuffle(list) {
 module.exports = {
 	readFile: getFileContents,
 	groupme_text_post: groupme_text_post,
-	log: log,
 	shuffle: shuffle
 };
