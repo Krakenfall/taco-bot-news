@@ -1,4 +1,4 @@
-FROM node:argon
+FROM node:boron
 LABEL Description="Posts news into the provided GroupMe chat" \
 Vendor="Krakenfall" Version="1.0"
 
