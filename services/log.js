@@ -8,6 +8,12 @@ const log = {
     error: "./logs/error.log"
 };
 
+// Create log dir
+if (!fs.existsSync(`./logs`)) {
+    fs.mkdirSync(`./logs`);
+}
+
+// Create log files
 if (!fs.existsSync(`${log.error}`)) {
     fs.writeFileSync(`${log.error}`,'');
 }
