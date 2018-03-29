@@ -47,13 +47,7 @@ var groupme_text_post = function(text, groupId, callback) {
 	});
 };
 
-function shuffle(list) {
-    for(var j, x, i = list.length; i; j = parseInt(Math.random() * i), x = list[--i], list[i] = list[j], list[j] = x);
-    return list;
-};
-
 module.exports = {
 	readFile: getFileContents,
-	groupme_text_post: groupme_text_post,
-	shuffle: shuffle
+	groupme_text_post: groupme_text_post
 };
