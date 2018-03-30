@@ -10,7 +10,15 @@
         "monitorSubreddit": "__RedditMonitorSubreddit__",
         "clientId": "__RedditClientId__",
         "secretId": "__RedditSecretId__",
-        "targetGroupMeGroupId": "__TargetGroupMeGroupId__"
+        "targetGroupMeGroupId": "__TargetGroupMeGroupId__",
+        "filters": [
+            "[D2] Daily Reset Thread",
+            "Daily Questions",
+            "Daily Thread -",
+            "Daily Discussion -",
+            "Weekly Loot Hub",
+            "[D1]"
+        ]
     },
     "discord": {
         "ClientId": "__DiscordClientId__",
