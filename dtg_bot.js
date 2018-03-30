@@ -8,11 +8,25 @@ var reddit = new rawjs("raw.js monitor of DTG_Bot by https://github.com/Krakenfa
 var db = require('./db.js');
 const logger = require('./services/log');
 
-var isPostedWithinCheckPeriod = function (postedDate, checkPeriodInMinutes) {
+var isInCheckPeriod = function (postedDate, checkPeriodInMinutes) {
 	var cutOffTime = Math.floor(new Date().getTime()/1000.0) - (checkPeriodInMinutes * 60);
 	if (postedDate >= cutOffTime) {
 		return true;
 	} else { return false;}
+};
+
+var matchesFilter = function (title, filters) {
+	var matches = false;
+	for (var i = 0; i < filters.length; i++) {
+		if (title.indexOf(filters[i]) > -1) {
+			matches = true;
+			logger.log('debug',
+					`New post matches filter. Not posting.\r\n` + 
+					`\tPost title: ${title}\r\n` +
+					`\tMatching Filter: ${filters[i]}`);
+		}
+	}
+	return matches;
 };
 
 var getCommands = function(callback) {
@@ -36,10 +50,29 @@ var searchByName = function(name, array) {
 
 var updateCommandValue = function(command) {
 	db.get().collection("commands").update({_id: command._id}, {$set: {value: command.value}}, function(e, result) {
-		if (e) { logger.error(`Error updating command: ${e}`, null, true); }
-		else { logger.info(`Successfully updated command`, null, true); }
+		if (e) { logger.error(e); }
+		else { logger.info(`Successfully updated command ${command.name}`); }
 	});	
 };
+
+var updateCommands = function (postTitle, postUrl, updates) {
+	getCommands(function(getCommandsError, commands) {
+		if (!getCommandsError) {
+			for (var k = 0; k < updates.length; k++) {
+				if (updates[k].redditFilter && 
+					postTitle.indexOf(updates[k].redditFilter) > -1) {
+					var command = searchByName(
+						updates[k].name.toLowerCase(), commands);
+					command.value = [postUrl];
+					updateCommandValue(command);
+					break;
+				}
+			}
+		} else {
+			logger.error(getCommandsError);
+		}
+	});
+}
 
 var run = function(callback) {
 	var config = require('./config.json');
@@ -82,43 +115,30 @@ var run = function(callback) {
 		// Compare latest to saved posts
 		var newPosts = [];
 		for (var j = 0; j < posts.length; j++) {
-			if (isPostedWithinCheckPeriod(posts[j].created_utc, redditConfig.checkPeriodInMinutes)) {
-				logger.info("New post: " + posts[j].title, null, true);
-				newPosts.push(posts[j]);
+			var url = posts[j].url;
+			var title = posts[j].title;
+			if (isInCheckPeriod(posts[j].created_utc, redditConfig.checkPeriodInMinutes)){ 				
+				// Update commands
+				if (config.dtgCommandUpdates && config.dtgCommandUpdates.length > 0) {
+					updateCommands(title, url, config.dtgCommandUpdates);					
+				}
 				// Send to GroupMe
-				var postUrl = posts[j].url;
-				var postTitle = posts[j].title;
-				logger.info("Sending new link to GroupMe...", null, true);
-				apputil.groupme_text_post(postUrl, redditConfig.targetGroupMeGroupId, function(err) {
-					if (!err) {
-					if (config.dtgCommandUpdates && config.dtgCommandUpdates.length > 0) {
-						getCommands(function(getCommandsError, commands) {
-							if (!getCommandsError) {
-								for (var k = 0; k < config.dtgCommandUpdates.length; k++) {
-									if (config.dtgCommandUpdates[k].redditFilter && 
-										postTitle.indexOf(config.dtgCommandUpdates[k].redditFilter) > -1) {
-										var command = searchByName(
-											config.dtgCommandUpdates[k].name.toLowerCase(), commands);
-										command.value = [postUrl];
-										updateCommandValue(command);
-										break;
-									}
-								}
-							}
-						});
-					}
-					} else { logger.error(err); }
-				});
-				
+				if (!matchesFilter(title, redditConfig.filters)) {				
+					logger.info(`New post does not match any filters. Send to GroupMe:\r\n` + 
+								`\tPost title: ${title}\r\n` +
+								`\tLink: ${url}`);
+					newPosts.push(posts[j]);
+					apputil.groupme_text_post(url, redditConfig.targetGroupMeGroupId);
+				}
 			}
 		}			
 	} else {
-		logger.error("Error:\r\n" + err.stack, null, true);
+		logger.error(err);
 		callback(err);
 	}
 	});
 	} catch(error) {
-		logger.error("ERROR: Something went wrong: \r\n" + error.stack, null, true);
+		logger.error("ERROR: Something went wrong: \r\n" + error.stack);
 		callback(error);
 	}
 }
