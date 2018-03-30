@@ -15,7 +15,7 @@ var getFileContents = function(filename, callback) {
 	}
 };
 
-var groupme_text_post = function(text, groupId, callback) {
+var groupme_text_post = function(text, groupId) {
 	var bot = null;
 	db.get().collection("bots").find().toArray(function(error, bots) {
 		if (error) {
@@ -23,19 +23,17 @@ var groupme_text_post = function(text, groupId, callback) {
 		} else {
 			bot = bots.find(o => o.groupId === groupId);
 			try {
-				var message = "Success! Posted:\r\n";
-
 				request.post("https://api.groupme.com/v3/bots/post"
 					, {json: {"bot_id": bot.id, "text": text}}
 					, (error, response, body) => {
 						if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-							message = `${message}${text} Response: \r\n${body}`;
-							callback(null, message);
+							logger.info(`Successfully posted to GroupMe: ${text}`);
 						}
 						else {
-							logger.error(`Failed sending message with status code ${response.statusCode}`);
-							logger.error(`Failed to send message with text:\r\n${text}`);
-							callback(error);
+							logger.error(`Failed sending message.` + 
+										`\tStatus code: ${response.statusCode}` +
+										`\tText: ${text}` +
+										`\tError: ${error}`);
 						}
 					}
 				);
