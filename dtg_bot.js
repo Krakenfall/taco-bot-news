@@ -15,6 +15,20 @@ var isInCheckPeriod = function (postedDate, checkPeriodInMinutes) {
 	} else { return false;}
 };
 
+var matchesFilter = function (title, filters) {
+	var matches = false;
+	for (var i = 0; i < filters.length; i++) {
+		if (title.indexOf(filters[i]) > -1) {
+			matches = true;
+			logger.log('debug',
+					`New post matches filter. Not posting.\r\n` + 
+					`Post title: ${title}\r\n` +
+					`Matching Filter: ${filters[i]}`);
+		}
+	}
+	return matches;
+};
+
 var getCommands = function(callback) {
 	db.get().collection("commands").find().toArray(function(error, results) {
 		if (error) {
@@ -82,7 +96,8 @@ var run = function(callback) {
 		// Compare latest to saved posts
 		var newPosts = [];
 		for (var j = 0; j < posts.length; j++) {
-			if (isInCheckPeriod(posts[j].created_utc, redditConfig.checkPeriodInMinutes)) {
+			if (isInCheckPeriod(posts[j].created_utc, redditConfig.checkPeriodInMinutes) &&
+				!matchesFilter(posts[j].title, redditConfig.filters)) {
 				logger.info("New post: " + posts[j].title, null, true);
 				newPosts.push(posts[j]);
 				// Send to GroupMe
