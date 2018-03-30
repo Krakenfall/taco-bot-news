@@ -8,7 +8,7 @@ var reddit = new rawjs("raw.js monitor of DTG_Bot by https://github.com/Krakenfa
 var db = require('./db.js');
 const logger = require('./services/log');
 
-var isPostedWithinCheckPeriod = function (postedDate, checkPeriodInMinutes) {
+var isInCheckPeriod = function (postedDate, checkPeriodInMinutes) {
 	var cutOffTime = Math.floor(new Date().getTime()/1000.0) - (checkPeriodInMinutes * 60);
 	if (postedDate >= cutOffTime) {
 		return true;
@@ -82,7 +82,7 @@ var run = function(callback) {
 		// Compare latest to saved posts
 		var newPosts = [];
 		for (var j = 0; j < posts.length; j++) {
-			if (isPostedWithinCheckPeriod(posts[j].created_utc, redditConfig.checkPeriodInMinutes)) {
+			if (isInCheckPeriod(posts[j].created_utc, redditConfig.checkPeriodInMinutes)) {
 				logger.info("New post: " + posts[j].title, null, true);
 				newPosts.push(posts[j]);
 				// Send to GroupMe
