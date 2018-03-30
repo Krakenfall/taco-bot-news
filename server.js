@@ -1,21 +1,26 @@
+
 // Third-party dependencies
 var Promise = require('bluebird');
 var fs = Promise.promisifyAll(require('fs'));
 var express = require('express');
 var bodyParser = require('body-parser');
+const winston = require('winston');
+var logger = require('./services/log');
 
 // Local dependencies
 var configService = require('./services/configuration.js');
 var apputil = require("./util.js");
 var dtg_bot = require("./dtg_bot.js");
 var db = require('./db.js');
-
-// Define constants
-
-// Define globals
-
-// update the commands command to point to this instance of the bot
 var config = configService.GetConfigurationSync();
+
+// Set debug logs
+if (config.debug) {
+	logger.add(new winston.transports.Console({
+	  format: winston.format.simple(),
+	  level: 'debug' 
+	}));
+  }
 
 // Begin Express handlers
 var app = express();
@@ -32,57 +37,72 @@ app.get('/', function(req, res) {
 // Return api status
 app.get('/status', function(req, res) {
 	res.send('UP');
+	logger.log('debug', 'Status is UP');
 });
 
 app.get("/log", function(req, res) {
-	var logName = "server.log";
-	apputil.readFile(logName, function(error, logData){
+	const log = new Date().toISOString();
+	logger.fileDailyRead('info', function(error, logData){
 		if (error) {
-			apputil.log(`Error retrieving log: \r\n ${error.stack}`);
+			logger.error(error);
 			res.end(error);
 		} else {
 			// fs.readFileSync returns a buffer. Convert to string here
 			res.send(logData.toString());
+			logger.log('debug', 'Sent log');
+		}
+	});
+});
+
+app.get("/log/error", function(req, res) {
+	logger.fileRead('error', function(error, logData){
+		if (error) {
+			logger.error(`Error retrieving log: \r\n ${error.toString()}`);
+			res.end(error);
+		} else {
+			// fs.readFileSync returns a buffer. Convert to string here
+			res.send(logData.toString());
+			logger.log('debug', 'Sent error log');
 		}
 	});
 });
 
 // Handle Error response
 app.use(function(err, req, res, next) {
-	apputil.log("Error with server:\r\nError:\r\n" + err.stack + "\r\nStack:" + err.stack);
+	logger.error("Error with server:\r\nError:\r\n" + err.stack + "\r\nStack:" + err.stack);
 	res.status(500).send('Something broke!');
 });
 
 db.connect(config.mongoConnectionString, function(err) {
 	if (err) {
-		apputil.log(`Unable to connect to mongo. Error:\r\n${err}`);
+		logger.error(`Unable to connect to mongo. Error:\r\n${err}`);
 		process.exit(1);
 	}
-	apputil.log("Opened db connection", null, true);
+	logger.info("Opened db connection", null, true);
 
 	app.listen(config.port, function () {
-		apputil.log("Server listening on port " + config.port, null, true);
+		logger.info("Server listening on port " + config.port, null, true);
 	});	
 
-	apputil.log("Beginning dtg_bot loop.", null, true);
-	apputil.log(`config.reddit.checkPeriodInMinutes: ${config.reddit.checkPeriodInMinutes}`, null, true);
+	logger.info("Beginning dtg_bot loop.", null, true);
+	logger.info(`config.reddit.checkPeriodInMinutes: ${config.reddit.checkPeriodInMinutes}`, null, true);
 	if (config.reddit && config.reddit.checkPeriodInMinutes) {
 		dtg_bot.run(function(error) {
 			if (error) {
-				apputil.log("Failed when running dtg_bot:\r\n" + error.stack, null, true);
+				logger.error("Failed when running dtg_bot:\r\n" + error.stack, null, true);
 			}
 		});
 
 		setInterval(function(){
 			dtg_bot.run(function(error) {
 				if (error) {
-					apputil.log("Failed when running dtg_bot:\r\n" + error.stack, null, true);
+					logger.error("Failed when running dtg_bot:\r\n" + error.stack, null, true);
 				}
 			});
 		}, config.reddit.checkPeriodInMinutes * 60 * 1000);
 	}
 	else {
-		apputil.log("Critical: Invalid config.json. Ensure that both config.reddit and " + 
+		logger.error("Critical: Invalid config.json. Ensure that both config.reddit and " + 
 					"config.reddit.checkPeriodInMinutes exist and are correct.", null, true);
 		process.exit(1);
 	}

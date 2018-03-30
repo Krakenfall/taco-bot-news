@@ -3,22 +3,7 @@ var http = require('http');
 var request = require('request');
 var configService = require('./services/configuration.js');
 var db = require('./db.js');
-
-var log = function(data, file, logInConsole) {
-	var logFile = "";
-	if (file) {
-		logFile = file;
-	} else {
-		logFile = "server.log";
-	}
-	try {
-		fs.appendFileSync(logFile, new Date() + "\r\n");
-		if (logInConsole) { console.log(data); }
-		fs.appendFileSync(logFile, data + "\r\n\r\n");
-	} catch (error) {
-		console.log("Error: Failed to log data in " + file + "\r\nData: " + data);
-	}
-};
+const logger = require('./services/log');
 
 var getFileContents = function(filename, callback) {
 	var contents = null;
@@ -30,19 +15,11 @@ var getFileContents = function(filename, callback) {
 	}
 };
 
-// TODO: streamline this out with promises
-function announceError(source, message, callback) {
-	var logMessage = `${source}:\r\n${message}`;
-
-	log(message);
-	callback(logMessage);
-}
-
 var groupme_text_post = function(text, groupId, callback) {
 	var bot = null;
 	db.get().collection("bots").find().toArray(function(error, bots) {
 		if (error) {
-			log(`Error retrieving bots: ${error}`);
+			logger.error(`Error retrieving bots: ${error}`);
 		} else {
 			bot = bots.find(o => o.groupId === groupId);
 			try {
@@ -56,28 +33,21 @@ var groupme_text_post = function(text, groupId, callback) {
 							callback(null, message);
 						}
 						else {
-							message = `Failed to submit GroupMe message.\r\nResponse Code: ${response.statusCode}\r\nError: ${error}\r\nMessage body:\r\n${text}`;
-							announceError('groupme_text_post', message, callback);
+							logger.error(`Failed sending message with status code ${response.statusCode}`);
+							logger.error(`Failed to send message with text:\r\n${text}`);
+							callback(error);
 						}
 					}
 				);
 			}
 			catch (err) {
-				message = "Error submitting groupme message: " + err;
-				log(message);
+				logger.error(err);
 			}
 		}
 	});
 };
 
-function shuffle(list) {
-    for(var j, x, i = list.length; i; j = parseInt(Math.random() * i), x = list[--i], list[i] = list[j], list[j] = x);
-    return list;
-};
-
 module.exports = {
 	readFile: getFileContents,
-	groupme_text_post: groupme_text_post,
-	log: log,
-	shuffle: shuffle
+	groupme_text_post: groupme_text_post
 };
